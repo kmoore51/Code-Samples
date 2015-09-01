@@ -1,0 +1,1220 @@
+$(function () {
+	var tempFields = tempParams.DATA[0];
+	var tempStart = 2;
+	var tempLabels = new Array();
+	if(tempData[0][0] == 3) {
+		for(var z = 1; z < tempData.length; z++) {
+			tempData[z].splice(2, 1);
+		}
+	}
+	else if(tempData[0][0] == 1) {
+		tempData[1].splice(1, 0, 'Measure');
+		for(var z = 2; z < tempData.length; z++) {
+			tempData[z].splice(1, 0, '');
+		}
+	}
+	tempStart = tempData[0][0];
+ 	tempLabels = tempData[1].slice(tempStart);
+	tempData = tempData.slice(2);
+	var countyData = new Array();
+	var countyParams = new Object;
+	var newData = new Array();
+	
+	var usColor1 = ['#000000', '#3D3D3D', '#707070', '#A5A5A5', '#CECECE', '#E8E8E8'];//black/grey - US
+	var usColor2 = ['#707070', '#A5A5A5', '#CECECE', '#E8E8E8', '#000000', '#3D3D3D'];//black/grey - US
+	var usColor3 = ['#000000', '#A5A5A5', '#3D3D3D', '#CECECE', '#707070', '#E8E8E8'];//black/grey - US
+						
+	var stateColor1 = ['#2A772A', '#49C449', '#6BF96B', '#BDDC9D', '#D6FCD6', '#2E411D'];//greens - WA
+	var stateColor2 = ['#6BF96B', '#BDDC9D', '#D6FCD6', '#2E411D', '#2A772A', '#49C449'];//greens - WA
+	var stateColor3 = ['#2A772A', '#BDDC9D', '#49C449', '#D6FCD6', '#6BF96B', '#2E411D'];//greens - WA
+	
+	var countyColor1 = ['#8C5008', '#AD8237', '#D4A452', '#ECC881', '#FDE4A5'];//browns_tans - county
+	var countyColor2 = ['#D4A452', '#ECC881', '#FDE4A5', '#8C5008', '#AD8237'];//browns_tans - county
+	var countyColor3 = ['#8C5008', '#ECC881', '#AD8237', '#FDE4A5', '#D4A452'];//browns_tans - county
+	
+	var alt1Color1 = ['#462543', '#60335B', '#6D3A67', '#AC5CA4', '#EC7EE0'];//purples
+	var alt1Color2 = ['#6D3A67', '#AC5CA4', '#EC7EE0', '#462543', '#60335B'];//purples
+	var alt1Color3 = ['#462543', '#AC5CA4', '#60335B', '#EC7EE0', '#6D3A67'];//purples
+	
+	var alt2Color1 = ['#1A3D43', '#0E665C', '#507C68', '#849D8E', '#AABCB1'];//aquas
+	var alt2Color2 = ['#507C68', '#849D8E', '#AABCB1', '#1A3D43', '#0E665C'];//aquas
+	var alt2Color3 = ['#1A3D43', '#849D8E', '#0E665C', '#AABCB1', '#507C68'];//aquas
+	
+	var alt3Color1 = ['#580101', '#842929', '#985353', '#BF7575', '#C19999'];//burgundies
+	var alt3Color2 = ['#985353', '#BF7575', '#C19999', '#580101', '#842929'];//burgundies
+	var alt3Color3 = ['#580101', '#BF7575', '#842929', '#C19999', '#985353'];//burgundies
+	
+	var defaultColor1 = ['#D23600', '#D95100', '#DE6D00', '#EE8900', '#FCA600'];//orange
+	var defaultColor2 = ['#DE6D00', '#EE8900', '#FCA600', '#D23600', '#D95100'];//orange
+	var defaultColor3 = ['#D23600', '#EE8900', '#D95100', '#FCA600', '#DE6D00'];//orange
+	
+	var yellowPallete = ['#FCC986', '#E5AD51', '#F99D23'];//yellow pallette
+	
+	var locs = getLocNum(tempData);
+	var colorCount = locs.length;
+	
+	var stateD = new Array();
+	var usD = new Array();
+	var countyOtherD = new Array();
+	
+    for(var z = 0; z < tempData.length; z++) {
+		tempData[z].splice(2,tempStart - 2);
+		tempData[z][0] = (tempData[z][0]).trim();
+		switch((tempData[z][0]).trim()) {
+			case "Grant County":
+			case "Grant County Sheriff":
+			case "Adams and Grant County":
+			case "Columbia River":
+			case "Columbia River nr Vernita":
+			case "Crab Creek":
+			case "Inland Northwest Region":
+			case "Moses Lake":
+			case "City of Moses Lake":
+			case "City of Moses Lake Police Department":
+  				countyData.push(tempData[z].slice());
+				break;
+			case "Washington":
+			case "Washington State":
+  				stateD.push(tempData[z].slice());
+				break;
+			case "United States":
+  				usD.push(tempData[z].slice());
+				break;
+			case "":
+				if(countyOtherD.length > 0) {
+					if(stateD.length > 0) {
+						if(usD.length > 0) {
+        				 	countyData = countyData.concat(countyOtherD, stateD, usD);
+    					}
+    					else {
+        				 	countyData = countyData.concat(countyOtherD, stateD);
+    					}
+					}
+                    else {
+                      countyData = countyData.concat(countyOtherD);
+                    }
+					countyData.push(tempData[z].slice());
+					countyOtherD = new Array;
+					stateD = new Array;
+					usD = new Array;
+				}
+				else if(stateD.length > 0) {
+					if(usD.length > 0) {
+						countyData = countyData.concat(stateD, usD);
+  					}
+                    else {
+                      countyData = countyData.concat(stateD);
+                    }
+					countyData.push(tempData[z].slice());
+					stateD = new Array;
+					usD = new Array;
+				}
+				else if(usD.length > 0) {
+					countyData = countyData.concat(usD);
+  					countyData.push(tempData[z].slice());
+  					usD = new Array;
+				}
+				else {	
+					if(cntyGraphType == 'mixed' || cntyGraphType == 'sgbar and line'){
+						countyData.push(tempData[z].slice());
+					}					
+					countyData.push(tempData[z]);
+				}
+				break;
+			default:				
+  				countyOtherD.push(tempData[z]);
+				break;				
+		}//end switch
+	}//end for
+	
+    if(countyOtherD.length > 0) {
+    	if(stateD.length > 0) {
+    		if(usD.length > 0) {
+    			countyData = countyData.concat(countyOtherD, stateD, usD);
+            }
+            else {
+                countyData = countyData.concat(countyOtherD, stateD);
+            }
+        }
+        else {
+          countyData = countyData.concat(countyOtherD);
+        }
+    }
+    else if(stateD.length > 0) {
+        if(usD.length > 0) {
+          countyData = countyData.concat(stateD, usD);
+        }
+        else {
+          countyData = countyData.concat(stateD);
+        }
+    }
+    else if(usD.length > 0) {
+    	countyData = countyData.concat(usD);
+    }
+    getParams();
+	function getParams() {
+    	temp = tempFields[3];
+    	countyParams['TITLE'] = temp;
+    	//countyParams['TITLE'] = temp.slice(temp.search(" "),temp.length);
+    	for(var k = 7; k < tempParams.DATA[0].length; k++) {
+    		switch(tempParams.COLUMNS[k].substr(0, 4)) {
+    			case 'CNTY':
+    				countyParams[tempParams.COLUMNS[k].substr(4)] = tempFields[k];
+    				break;
+    		}//end switch
+		}//end for
+	}//end getParams
+	
+	createGraph(countyData, cntyGraphType, countyParams, '#cntyGraphDiv');
+	
+	function createGraph(newTempData, graphType, newTempParams, whichGraphDiv) {
+		var firstYAxis = {
+			min: prepParam(newTempParams['YDATATYPE'], newTempParams['YMIN']),
+			max: prepParam(newTempParams['YDATATYPE'], newTempParams['YMAX']),
+			tickInterval: prepParam(newTempParams['YDATATYPE'], newTempParams['YINTERVAL']),
+			title: {
+				text: newTempParams['YLABEL'],
+				style: {
+					color: '#690c1c'
+				}
+			},
+			labels: {
+				style: {
+					color: '#576A7F'
+				},
+				formatter: function() {
+					var t = '';
+					var v = this.value % 1;
+					switch(newTempParams['YDATATYPE']) {
+						case 'currency':
+							if(v == 0) {
+								t = '$' + Highcharts.numberFormat(this.value, 0, '.', ',');
+							}
+							else {
+								t = '$' + Highcharts.numberFormat(this.value, 1, '.', ',');
+							}
+							//t = '$' + Highcharts.numberFormat(this.value, 0, '.', ',');
+							//t = '$' + this.value;
+							break;
+						case 'percent':
+							t = this.value + '%';
+							break;
+						case 'oneDecimal':
+							t = Highcharts.numberFormat(this.value, 1, '.', ',');
+							break;
+						case 'decimal':
+							t = Highcharts.numberFormat(this.value, 2, '.', ',');
+							break;
+						case 'threeDecimal':
+							t = Highcharts.numberFormat(this.value, 3, '.', ',');
+							break;
+						default:
+							t = Highcharts.numberFormat(this.value, 0, '.', ',');
+							break;
+					}
+					return t;
+				}
+			}
+		};
+		var secondYAxis = { // Secondary yAxis
+			min: prepParam(newTempParams['ZDATATYPE'], newTempParams['ZMIN']),
+			max: prepParam(newTempParams['ZDATATYPE'], newTempParams['ZMAX']),
+			tickInterval: prepParam(newTempParams['ZDATATYPE'], newTempParams['ZINTERVAL']),
+			title: {
+				text: newTempParams['ZLABEL'],
+				style: {
+					color: '#cdb494'
+				}
+			},
+			labels: {
+				style: {
+					color: '#576A7F'
+				},
+				formatter: function() {
+					var t = '';
+					var v = this.value % 1;
+					switch(newTempParams['ZDATATYPE']) {
+						case 'currency':
+							if(v == 0) {
+								t = '$' + Highcharts.numberFormat(this.value, 0, '.', ',');
+							}
+							else {
+								t = '$' + Highcharts.numberFormat(this.value, 1, '.', ',');
+							}
+							//t = '$' + Highcharts.numberFormat(this.value, 0, '.', ',');
+							//t = '$' + this.value;
+							break;
+						case 'percent':
+							t = this.value + '%';
+							break;
+						case 'oneDecimal':
+							t = Highcharts.numberFormat(this.value, 1, '.', ',');
+							break;
+						case 'decimal':
+							t = Highcharts.numberFormat(this.value, 2, '.', ',');
+							break;
+						case 'threeDecimal':
+							t = Highcharts.numberFormat(this.value, 3, '.', ',');
+							break;
+						default:
+							t = Highcharts.numberFormat(this.value, 0, '.', ',');
+							break;
+					}
+					return t;
+				}
+			},
+			opposite: true
+		};
+		Highcharts.setOptions({
+			chart: {
+				spacingTop: 50
+			},
+			credits: {
+				text: 'Grant County Trends',
+				href: 'http://test.grantcountytrends.ewu.edu',
+				style: {
+					fontSize: '12px'
+				}
+			},	
+			lang: {
+				saveKey: "Download Graph",
+				printKey: "Print Graph",
+				expandKey: "Expand Graph"
+			},
+			legend: {
+				margin: 30,
+				layout: 'vertical',
+				itemStyle: {
+					color:  '#576A7F'
+				},
+				itemHoverStyle:  {
+					cursor: 'default',
+					color:  '#a3acbb'
+				}
+			},
+			title: {
+				style: {
+					fontSize: '20px',
+					lineHeight: '20px',
+					fontFamily: "'Lato', sans-serif",
+					fontWeight: 700,
+					color:  '#576A7F'
+				},
+				text: newTempParams['TITLE']
+			},
+			xAxis: {
+				categories: tempLabels
+			},
+			yAxis: firstYAxis,			
+			tooltip: {
+				formatter: function() {
+					return prepTooltip(this.series.userOptions.dataType, this.y, this.x, this.series.name, Highcharts.numberFormat);
+				}
+			},
+			exporting: {
+				filename: function() { return chart.options.title; },
+				chartOptions: {
+					title: {
+						style: {
+							fontSize: 16
+						}
+					},
+					legend: {
+						borderWidth: 0
+					}
+				},
+				buttons: {
+					contextButton: {
+						symbol: 'url(images/OptionIcons/download.png)',
+						symbolX:  12,
+						symbolY: 11,
+						_titleKey: "saveKey",
+						menuItems: [{
+							text: 'Download PNG Image',
+								onclick: function() {
+									this.exportChart({
+										type: 'image/png',
+										filename: this.userOptions.title.text
+									});
+								}
+						}, {
+							text: 'Download JPEG Image',
+								onclick: function() {
+									this.exportChart({
+										type: 'image/jpeg',
+										filename: this.userOptions.title.text
+									});
+								}
+						}, {
+							text: 'Download SVG Vector Image',
+								onclick: function() {
+									this.exportChart({
+										type: 'image/svg+xml',
+										filename: this.userOptions.title.text
+									});
+								}
+						}, {
+							text: 'Download PDF Document',
+								onclick: function() {
+									this.exportChart({
+										type: 'application/pdf',
+										filename: this.userOptions.title.text
+									});
+								}
+						}]
+					},
+					printButton: {
+						symbol: 'url(images/OptionIcons/print.png)',
+						symbolX:  12,
+						symbolY: 11,
+						_titleKey: "printKey",
+						menuItems: [{
+							text: 'Print Graph',
+							onclick: function() {
+							   this.print();
+							}
+						}]
+					},
+					expandButton: {
+						symbol: 'url(images/OptionIcons/expand.png)',
+						_titleKey: "expandKey",
+						symbolX:  12,
+						symbolY: 11,
+						onclick: function () {
+							hs.htmlExpand(document.getElementById(whichGraphDiv), {
+								width: 1000,
+								height: 1000,
+								allowWidthReduction: true,
+								preserveContent: false
+							}, {
+								chartOptions: this.options
+							});
+						}
+					}
+				}
+			},        
+			navigation: {
+				buttonOptions: {
+					y: -40
+				}
+			}	
+		});
+    	switch(graphType) {
+    		case "bar":
+    			var newData = new Array();
+				var tempLegendTitle = '';
+    			var x = 0;
+    			for(var z = 0; z < newTempData.length; z++) {
+    				if((z > 0 && (newTempData[z][0] !== newTempData[z - 1][0])) || (x > 4)) {
+    					x = 0;
+    				}
+					if(newTempData[z][1] == '') {
+						tempLegendTitle = "<b>" + newTempData[z][0] + "</b>";
+					}
+					else {
+						tempLegendTitle = "<b>" + newTempData[z][0] + "</b> - " + newTempData[z][1]
+					}
+    				newData.push({"name": tempLegendTitle, "color": assignColor(newTempData[z][0], x, "bar"), "data": prepData(newTempParams['YDATATYPE'], newTempData[z].slice(2)), "dataType": newTempParams['YDATATYPE'], "selected": true});
+    					x++;
+    			}
+				
+				var newHeight = 500 + (newData.length * 15);
+				(function (H) {
+					H.wrap(H.Legend.prototype, 'positionCheckboxes', function (p, scrollOffset) {
+						var alignAttr = this.group.alignAttr,
+							translateY,
+							clipHeight = this.clipHeight || this.legendHeight;			
+						if (alignAttr) {
+							translateY = alignAttr.translateY;
+							H.each(this.allItems, function (item) {
+								var checkbox = item.checkbox,
+									bBox = item.legendItem.bBox,
+									top;			
+								if (checkbox) {
+									top = (translateY + checkbox.y + (scrollOffset || 0) + 3);
+									H.css(checkbox, {
+										left: (alignAttr.translateX + item.checkboxOffset + checkbox.x - 60 - bBox.width) + 'px',
+										top: top + 'px',
+										display: top > translateY - 6 && top < translateY + clipHeight - 6 ? '' : 'none'
+									});
+								}
+							});
+						}
+					});
+				})(Highcharts);
+				
+    			$(whichGraphDiv).highcharts({
+    				chart: {
+						height: newHeight,
+    					type: 'column'
+    				},
+    				plotOptions: {
+    					series: {
+    						showCheckbox: true,   
+    						events: {
+    							checkboxClick:function(event) {
+    								if (this.visible) { 
+    									this.hide();   
+    								}
+    								else { 
+    									this.show();
+    								} 
+    							},
+    							legendItemClick: function () {
+    								return false;  // <== returning false will cancel the default action
+    							}      
+    						} 
+    					}
+    				},
+    				series: newData
+    			});
+    			break;
+    		case "line":
+    			var newData = new Array();
+				var tempLegendTitle = '';
+    			var x = 0;
+    			for(var z = 0; z < newTempData.length; z++) {
+    				if((z > 0 && (newTempData[z][0] !== newTempData[z - 1][0])) || (x > 4)) {
+    					x = 0;
+    				}
+					if(newTempData[z][1] == '') {
+						tempLegendTitle = "<b>" + newTempData[z][0] + "</b>";
+					}
+					else {
+						tempLegendTitle = "<b>" + newTempData[z][0] + "</b> - " + newTempData[z][1]
+					}
+    				newData.push({"name": tempLegendTitle, "color": assignColor(newTempData[z][0], x, "line"), "data": prepData(newTempParams['YDATATYPE'], newTempData[z].slice(2)), "connectNulls": true, "dataType": newTempParams['YDATATYPE'], "selected": true});
+    					x++;
+    			}
+				
+				var newHeight = 500 + (newData.length * 15);
+				(function (H) {
+					H.wrap(H.Legend.prototype, 'positionCheckboxes', function (p, scrollOffset) {
+						var alignAttr = this.group.alignAttr,
+							translateY,
+							clipHeight = this.clipHeight || this.legendHeight;			
+						if (alignAttr) {
+							translateY = alignAttr.translateY;
+							H.each(this.allItems, function (item) {
+								var checkbox = item.checkbox,
+									bBox = item.legendItem.bBox,
+									top;			
+								if (checkbox) {
+									top = (translateY + checkbox.y + (scrollOffset || 0) + 3);
+									H.css(checkbox, {
+										left: (alignAttr.translateX + item.checkboxOffset + checkbox.x - 60 - bBox.width) + 'px',
+										top: top + 'px',
+										display: top > translateY - 6 && top < translateY + clipHeight - 6 ? '' : 'none'
+									});
+								}
+							});
+						}
+					});
+				})(Highcharts);
+    			
+    			$(whichGraphDiv).highcharts({
+    				chart: {
+						height: newHeight,
+    					type: 'line'
+    				},
+    				plotOptions: {
+    					series: {
+    						showCheckbox: true,   
+    						events: {
+    							checkboxClick:function(event) {
+    								if (this.visible) { 
+    									this.hide();   
+    								}
+    								else { 
+    									this.show();
+    								} 
+    							},
+    							legendItemClick: function () {
+    								return false;  // <== returning false will cancel the default action
+    							}       
+    						},
+							marker: {
+								radius: 3
+							}    
+    					}
+    				},
+    				series: newData
+    			});
+    			break;
+    		case "mixed":
+    			var skip = false;
+    			var newType = 'column';
+    			var newData = new Array();
+				var tempLegendTitle = '';
+    			var x = 0;
+    			for(var z = 0; z < newTempData.length; z++) {
+					if(newTempData[z][0] == ''){
+						if(whichGraphDiv !== '#cntyGraphDiv') {
+							for(var k = 0; k < newData.length; k++) {
+								if(newData[k]['name'].indexOf('Grant County') > -1) {
+									newData.splice(k, 1);
+									k--;
+									//newData[0]["color"] = yellowPallete[0];
+								}
+							}
+							if(newData.length == 1){
+								newData[0]["color"] = yellowPallete[0];
+							}
+						}
+						else {
+							if(z == 1){
+								newData[0]["color"] = yellowPallete[0];
+							}
+						}
+    					newType = 'line';
+    					skip = true;
+    				}
+    				if((z > 0 && (newTempData[z][0] !== newTempData[z - 1][0])) || (x > 4)) {
+    					x = 0;
+    				}
+					if(newTempData[z][1] == '') {
+						tempLegendTitle = "<b>" + newTempData[z][0] + "</b>";
+					}
+					else {
+						tempLegendTitle = "<b>" + newTempData[z][0] + "</b> - " + newTempData[z][1];
+					}
+    				if(newTempData[z][0] != '' && !skip){
+    					newData.push({"name": tempLegendTitle, "color": assignColor(newTempData[z][0], x, "mixed"), "type": newType, "yAxis": 0, "data": prepData(newTempParams['YDATATYPE'], newTempData[z].slice(2)), "dataType": newTempParams['YDATATYPE'], "selected": true});
+    					x++;
+    				}
+    				else if(newTempData[z][0] != '' && newType == 'line') {
+    					newData.push({"name": tempLegendTitle, "color": assignColor(newTempData[z][0], x, "line"), "type": newType, "yAxis": 1, "data": prepData(newTempParams['ZDATATYPE'], newTempData[z].slice(2)), "connectNulls": true, "dataType": newTempParams['ZDATATYPE'], "selected": true});
+    					x++;
+    				}
+    			}
+				
+				var newHeight = 500 + (newData.length * 15);
+				(function (H) {
+					H.wrap(H.Legend.prototype, 'positionCheckboxes', function (p, scrollOffset) {
+						var alignAttr = this.group.alignAttr,
+							translateY,
+							clipHeight = this.clipHeight || this.legendHeight;			
+						if (alignAttr) {
+							translateY = alignAttr.translateY;
+							H.each(this.allItems, function (item) {
+								var checkbox = item.checkbox,
+									bBox = item.legendItem.bBox,
+									top;			
+								if (checkbox) {
+									top = (translateY + checkbox.y + (scrollOffset || 0) + 3);
+									H.css(checkbox, {
+										left: (alignAttr.translateX + item.checkboxOffset + checkbox.x - 60 - bBox.width) + 'px',
+										top: top + 'px',
+										display: top > translateY - 6 && top < translateY + clipHeight - 6 ? '' : 'none'
+									});
+								}
+							});
+						}
+					});
+				})(Highcharts);
+				
+    			$(whichGraphDiv).highcharts({
+    				chart: {
+						height: newHeight
+    				},
+    				yAxis: [firstYAxis, secondYAxis],
+    				plotOptions: {
+    					series: {
+    						showCheckbox: true,
+    						events: {
+    							checkboxClick:function(event) {
+    								if (this.visible) { 
+    									this.hide();   
+    								}
+    								else { 
+    									this.show();
+    								} 
+    							},
+    							legendItemClick: function () {
+    								return false;  // returning false will cancel the default action
+    							}       
+    						},
+							marker: {
+								radius: 3
+							}
+    					}
+    				},
+    				series: newData
+    			});
+    			break;
+    		case "stacked bar":
+    			var newData = new Array();
+				var tempLegendTitle = '';
+    			var newColors = new Array();
+    			var x = 0;
+    			
+    			for(var z = 0; z < newTempData.length; z++) {
+    				if((z > 0 && (newTempData[z][0] !== newTempData[z - 1][0]))) {
+    					x = 0;
+    				}
+					if(newTempData[z][1] == '') {
+						tempLegendTitle = "<b>" + newTempData[z][0] + "</b>";
+					}
+					else {
+						tempLegendTitle = "<b>" + newTempData[z][0] + "</b> - " + newTempData[z][1]
+					}
+    				newColors.push(assignColor(newTempData[z][0], x, "stacked bar"));
+    				newData.push({"name": tempLegendTitle, "color": newColors[z][x], "data": prepData(newTempParams['YDATATYPE'], newTempData[z].slice(2)), "dataType": newTempParams['YDATATYPE'], "index":  (newTempData.length - z), "legendIndex": z, "zIndex": z, "selected": true});
+    					x++;
+    			}
+				
+				var newHeight = 500 + (newData.length * 15);
+				(function (H) {
+					H.wrap(H.Legend.prototype, 'positionCheckboxes', function (p, scrollOffset) {
+						var alignAttr = this.group.alignAttr,
+							translateY,
+							clipHeight = this.clipHeight || this.legendHeight;			
+						if (alignAttr) {
+							translateY = alignAttr.translateY;
+							H.each(this.allItems, function (item) {
+								var checkbox = item.checkbox,
+									bBox = item.legendItem.bBox,
+									top;			
+								if (checkbox) {
+									top = (translateY + checkbox.y + (scrollOffset || 0) + 3);
+									H.css(checkbox, {
+										left: (alignAttr.translateX + item.checkboxOffset + checkbox.x - 60 - bBox.width) + 'px',
+										top: top + 'px',
+										display: top > translateY - 6 && top < translateY + clipHeight - 6 ? '' : 'none'
+									});
+								}
+							});
+						}
+					});
+				})(Highcharts);
+				
+    			$(whichGraphDiv).highcharts({
+    				chart: {
+						height: newHeight,
+    					type: 'column'
+    				},
+    				plotOptions: {
+    					column: {
+    						stacking: function() {
+    							var t = '';
+    							switch(newTempParams['YDATATYPE']) {
+    								case 'percent':
+    									t = 'percent';
+    									break;
+    								default:
+    									t = 'normal';
+    									break;
+    							}
+    							return t;
+    						}
+    					},
+    					series: {
+    						showCheckbox: true,   
+    						events: {
+    							checkboxClick:function(event) {
+    								if (this.visible) { 
+    									this.hide();   
+    								}
+    								else { 
+    									this.show();
+    								} 
+    							},
+    							legendItemClick: function () {
+    								return false;  // <== returning false will cancel the default action
+    							}         
+    						}    
+    					}
+    				},
+    				series: newData				
+    			});
+    			break;
+    		case "stacked group bar":
+    			var newData = new Array();
+				var tempLegendTitle = '';
+    			var newColors = new Array();
+    			var x = 0;
+    			var j = 0;
+    			var f = true;
+    			var indexArray = new Array();
+				
+    			for(var k = 0; k < newTempData.length; k++) {
+    				if(indexArray.indexOf(newTempData[k][1]) == -1) {
+    					indexArray.push(newTempData[k][1]);
+    				}
+    			}
+				indexArray.reverse();
+    			for(var z = 0; z < newTempData.length; z++) {
+    				if((z > 0 && (newTempData[z][0] !== newTempData[z - 1][0]))) {
+    					x = 0;
+    				}
+					if(newTempData[z][1] == '') {
+						tempLegendTitle = "<b>" + newTempData[z][0] + "</b>";
+					}
+					else {
+						tempLegendTitle = "<b>" + newTempData[z][0] + "</b> - " + newTempData[z][1]
+					}
+    				newColors.push(assignColor(newTempData[z][0], x, "stacked group bar"));
+    				newData.push({"name": tempLegendTitle, "color": newColors[z][x], "data": prepData(newTempParams['YDATATYPE'], newTempData[z].slice(2)), "stack": newTempData[z][0], "dataType": newTempParams['YDATATYPE'], "index": indexArray.indexOf(newTempData[z][1]), "legendIndex": z, "selected": true});
+    					x++;
+    			}
+				
+				var newHeight = 500 + (newData.length * 15);
+				(function (H) {
+					H.wrap(H.Legend.prototype, 'positionCheckboxes', function (p, scrollOffset) {
+						var alignAttr = this.group.alignAttr,
+							translateY,
+							clipHeight = this.clipHeight || this.legendHeight;			
+						if (alignAttr) {
+							translateY = alignAttr.translateY;
+							H.each(this.allItems, function (item) {
+								var checkbox = item.checkbox,
+									bBox = item.legendItem.bBox,
+									top;			
+								if (checkbox) {
+									top = (translateY + checkbox.y + (scrollOffset || 0) + 3);
+									H.css(checkbox, {
+										left: (alignAttr.translateX + item.checkboxOffset + checkbox.x - 60 - bBox.width) + 'px',
+										top: top + 'px',
+										display: top > translateY - 6 && top < translateY + clipHeight - 6 ? '' : 'none'
+									});
+								}
+							});
+						}
+					});
+				})(Highcharts);
+    			
+    			$(whichGraphDiv).highcharts({
+    				chart: {
+						height: newHeight,
+    					type: 'column'
+    				},
+    				plotOptions: {
+    					column: {
+    						stacking: function() {
+    							var t = '';
+    							switch(newTempParams['YDATATYPE']) {
+    								case 'percent':
+    									t = 'percent';
+    									break;
+    								default:
+    									t = 'normal';
+    									break;
+    							}
+    							return t;
+    						}
+    					},
+    					series: {
+    						showCheckbox: true,   
+    						events: {
+    							checkboxClick:function(event) {
+    								if (this.visible) {
+    									this.hide();   
+    								}
+    								else { 
+    									this.show();
+    								} 
+    							},
+    							legendItemClick: function () {
+    								return false;  // <== returning false will cancel the default action
+    							}        
+    						}    
+    					}
+    				},
+    				series: newData
+    			});
+    			break;
+    		case "sgbar and line":
+    			var skip = false;
+    			var newType = 'column';
+    			var newData = new Array();
+				var tempLegendTitle = '';
+    			var newColors = new Array();
+    			var x = 0;
+    			var j = 0;
+    			
+    			for(var z = 0; z < newTempData.length; z++) {
+    				if(newTempData[z][0] == ''){
+    					j = z - 1;
+						if(whichGraphDiv !== '#cntyGraphDiv') {
+							for(var k = 0; k < newData.length; k++) {
+								if(newData[k]['name'].indexOf('Grant County') > -1) {
+									newData.splice(k, 1);
+									k--;
+								}
+							}
+						}
+    					newType = 'line';
+    					skip = true;
+    				}
+    				
+    				if((z > 0 && (newTempData[z][0] !== newTempData[z - 1][0]))) {
+    					x = 0;
+    				}
+					if(newTempData[z][1] == '') {
+						tempLegendTitle = "<b>" + newTempData[z][0] + "</b>";
+					}
+					else {
+						tempLegendTitle = "<b>" + newTempData[z][0] + "</b> - " + newTempData[z][1]
+					}
+    				
+    				newColors.push(assignColor(newTempData[z][0], x, "sgbar and line"));
+    				if(newTempData[z][0] != '' && !skip){
+    						newData.push({"name": tempLegendTitle, "color": newColors[z][x], "type": newType, "data": prepData(newTempParams['YDATATYPE'], newTempData[z].slice(2)), "stack": newTempData[z][0], "dataType": newTempParams['YDATATYPE'], "index": j, "legendIndex": z, "selected": true});
+    					x++;
+    					j--
+    				}
+    				else if(newTempData[z][0] != '' && newType == 'line') {
+    					newData.push({"name": tempLegendTitle, "color": assignColor(newTempData[z][0], x, "sgbarLine"), "type": newType, "yAxis": 1, "data": prepData(newTempParams['ZDATATYPE'], newTempData[z].slice(2)), "connectNulls": true, "dataType": newTempParams['ZDATATYPE'], "index": z, "legendIndex": z, "selected": true});
+    					x++;
+    				}
+    			}
+				
+				var newHeight = 500 + (newData.length * 15);
+				(function (H) {
+					H.wrap(H.Legend.prototype, 'positionCheckboxes', function (p, scrollOffset) {
+						var alignAttr = this.group.alignAttr,
+							translateY,
+							clipHeight = this.clipHeight || this.legendHeight;			
+						if (alignAttr) {
+							translateY = alignAttr.translateY;
+							H.each(this.allItems, function (item) {
+								var checkbox = item.checkbox,
+									bBox = item.legendItem.bBox,
+									top;			
+								if (checkbox) {
+									top = (translateY + checkbox.y + (scrollOffset || 0) + 3);
+									H.css(checkbox, {
+										left: (alignAttr.translateX + item.checkboxOffset + checkbox.x - 60 - bBox.width) + 'px',
+										top: top + 'px',
+										display: top > translateY - 6 && top < translateY + clipHeight - 6 ? '' : 'none'
+									});
+								}
+							});
+						}
+					});
+				})(Highcharts);
+    			
+    			$(whichGraphDiv).highcharts({
+    				chart: {
+						height: newHeight
+    				},
+    				yAxis: [firstYAxis, secondYAxis],
+    				plotOptions: {
+    					column: {
+    						stacking: function() {
+    							var t = '';
+    							switch(newTempParams['YDATATYPE']) {
+    								case 'percent':
+    									t = 'percent';
+    									break;
+    								default:
+    									t = 'normal';
+    									break;
+    							}
+    							return t;
+    						}
+    					},
+    					series: {
+    						showCheckbox: true,   
+    						events: {
+    							checkboxClick:function(event) {
+    								if (this.visible) { 
+    									this.hide();   
+    								}
+    								else { 
+    									this.show();
+    								} 
+    							},
+    							legendItemClick: function () {
+    								return false;  // <== returning false will cancel the default action
+    							}       
+    						},
+							marker: {
+								radius: 3
+							}
+    					}
+    				},
+    				series: newData
+    			});
+    			break;
+    	}//end switch
+	}//end createGraph
+
+	function prepParam(dataType, newParam){
+		var d = 0;
+		var tempNum = 0;
+		var tempParam = new Array();
+		switch(dataType){
+			case "currency":
+				tempParam = Number(newParam.toFixed(2));
+				break;
+			case "number":
+				tempParam = Number(newParam);
+				break;
+			case "percent":
+				tempNum = Number(newParam) * 100;
+				tempParam = Number(tempNum);
+				break;
+			case "oneDecimal":
+				tempParam = Number(newParam.toFixed(1));
+				break;
+			case "decimal":
+				tempParam = Number(newParam.toFixed(2));
+				break;
+			case "threeDecimal":
+				tempParam = Number(newParam.toFixed(3));
+				break;
+		}
+		return tempParam;
+	}
+
+	function prepData(dataType, dataArray){
+		var d = 0;
+		var tempNum = 0;
+		var tempDA = new Array();
+		switch(dataType){
+			case "currency":
+				for(d = 0; d < dataArray.length; d++){
+					if(dataArray[d] !== '' && dataArray[d] !== 'NA' && dataArray[d] !== 'N/A'){
+						tempNum = Number(dataArray[d]);
+						tempDA[d] = Number(tempNum.toFixed(2));
+					}
+					else {
+						tempDA[d] = null;
+					}
+				}
+				break;
+			case "number":
+				for(d = 0; d < dataArray.length; d++){
+					if(dataArray[d] !== '' && dataArray[d] !== 'NA' && dataArray[d] !== 'N/A'){
+						tempNum = Number(dataArray[d]);
+						tempDA[d] = Number(tempNum);
+					}
+					else {
+						tempDA[d] = null;
+					}
+				}
+				break;
+			case "percent":
+				for(d = 0; d < dataArray.length; d++){
+					if(dataArray[d] !== '' && dataArray[d] !== 'NA' && dataArray[d] !== 'N/A'){
+						tempNum = Number(dataArray[d]) * 100;
+						if((0 < tempNum && tempNum < 1) || (0 > tempNum && tempNum > -1)){
+							tempNum = Number(tempNum.toFixed(2));
+						}
+						else{
+							tempNum = Number(tempNum.toFixed(1));
+						}
+						tempDA[d] = Number(tempNum);
+					}
+					else {
+						tempDA[d] = null;
+					}
+				}
+				break;
+			case "oneDecimal":
+				for(d = 0; d < dataArray.length; d++){
+					if(dataArray[d] !== '' && dataArray[d] !== 'NA' && dataArray[d] !== 'N/A'){
+						tempNum = Number(dataArray[d]);
+						tempDA[d] = Number(tempNum.toFixed(1));
+					}
+					else {
+						tempDA[d] = null;
+					}
+				}
+				break;
+			case "decimal":
+				for(d = 0; d < dataArray.length; d++){
+					if(dataArray[d] !== '' && dataArray[d] !== 'NA' && dataArray[d] !== 'N/A'){
+						tempNum = Number(dataArray[d]);
+						tempDA[d] = Number(tempNum.toFixed(2));
+					}
+					else {
+						tempDA[d] = null;
+					}
+				}
+				break;
+			case "threeDecimal":
+				for(d = 0; d < dataArray.length; d++){
+					if(dataArray[d] !== '' && dataArray[d] !== 'NA' && dataArray[d] !== 'N/A'){
+						tempNum = Number(dataArray[d]);
+						tempDA[d] = Number(tempNum.toFixed(3));
+					}
+					else {
+						tempDA[d] = null;
+					}
+				}
+				break;
+		}		
+		return tempDA;
+	}
+
+	function prepTooltip(newDataType, yVal, xVal, newName, func){
+		var t = '';
+		var v = yVal % 1;
+		switch(newDataType) {
+			case 'currency':
+				if(v == 0) {
+					t = newName + "<br/>" + xVal + "<br/>$" + func(yVal, 0, '.', ',');
+				}
+				else {
+					t = newName + "<br/>" + xVal + "<br/>$" + func(yVal, 1, '.', ',');
+				}
+				//t = newName + "<br/>" + xVal + "<br/>$" + func(yVal, 0, '.', ',');
+				break;
+			case 'percent':
+				t = newName + "<br/>" + xVal + "<br/>" + yVal + "%";
+				break;
+			case 'oneDecimal':
+				t = newName + "<br/>" + xVal + "<br/>" + func(yVal, 1, '.', ',');
+				break;
+			case 'decimal':
+				t = newName + "<br/>" + xVal + "<br/>" + func(yVal, 2, '.', ',');
+				break;
+			case 'threeDecimal':
+				t = newName + "<br/>" + xVal + "<br/>" + func(yVal, 3, '.', ',');
+				break;
+			default:
+				t = newName + "<br/>" + xVal + "<br/>" + func(yVal, 0, '', ',');
+				break;
+		}
+		return t;
+	}
+	
+	//Assigns a color value for the series
+	function assignColor(value, i, graphing, newGDiv){
+		switch(value){
+			case "Grant County":
+			case "Grant County Sheriff":
+			case "Adams and Grant County":
+			case "Columbia River":
+			case "Columbia River nr Vernita":
+			case "Crab Creek":
+			case "Inland Northwest Region":
+			case "Moses Lake":
+			case "City of Moses Lake":
+			case "City of Moses Lake Police Department":
+				if(graphing == "mixed"){			
+					return countyColor2[i];
+				}
+				else if(graphing == "sgbar and line"){
+					return countyColor3;
+				}
+				else if(graphing == "sgbarLine"){
+						return yellowPallete[i];
+				}
+				else if(graphing == "stacked bar" || graphing == "stacked group bar"){
+					return countyColor3;
+				}
+				else
+					return countyColor1[i];
+				break;
+			case "Washington":
+			case "Washington State":
+				if(graphing == "mixed"){
+					return stateColor2[i];
+				}
+				else if(graphing == "sgbar and line"){
+					return stateColor3;
+				}
+				else if(graphing == "stacked bar" || graphing == "stacked group bar"){
+					return stateColor3;
+				}
+				else
+					return stateColor1[i];
+				break;
+			case "United States":
+			case "United States (median)":
+				if(graphing == "mixed"){
+					return usColor2[i];
+				}
+				else if(graphing == "sgbar and line"){
+					return usColor3;
+				}
+				else if(graphing == "stacked bar" || graphing == "stacked group bar"){
+					return usColor3;
+				}
+				else
+					return usColor1[i];
+				break;
+            case "Benton County, WA":
+            case "Benton County":
+            case "Whitman County":
+            case "Douglas County":
+                return alt3Color1[i];
+                break;
+            case "Ephrata":
+                return alt3Color2[i];
+                break;
+            case "Spokane":
+            case "Spokane County":
+            case "Columbia County":
+            case "Deschutes County, OR(Bend)":
+                return alt2Color1[i];
+                break;
+            case "Waitsburg":
+                return alt2Color2[i];
+                break;
+			case "City of Walla Walla":
+			case "Walla Walla County":
+			case "Boise":
+			case "City of Boise":
+			case "Greater Boise Area":
+                return defaultColor1[i];
+            case "Kootenai County, ID":
+            case "Chelan County":
+            case "Yakima County":
+            case "Franklin County":
+                return alt1Color1[i];
+                break;
+            case "Pasco":
+                return alt1Color2[i];
+                break;
+			default:
+				if(graphing == "mixed"){
+					return defaultColor2[i];
+				}
+				else if(graphing == "sgbar and line"){
+					return defaultColor3;
+				}
+				else if(graphing == "sgbarLine"){
+					return defaultColor2[i];
+				}
+				else if(graphing == "stacked bar" || graphing == "stacked group bar"){
+					return defaultColor3;
+				}
+				else
+					return defaultColor1[i];
+				break;
+		}//end switch
+	}//end of assignColor
+	
+	function getLocNum(nData){
+		var i;
+		var len = nData.length;
+		var outputArray = [];
+		var temp = {};
+		
+		for (i = 0; i < len; i++) {
+			temp[nData[i][0]] = 0;
+		}
+		for (i in temp) {
+			if(i != "")
+			outputArray.push(i);
+		}
+		return outputArray;
+	}//end of getLocNum
+	hs.Expander.prototype.onAfterExpand = function () {
+		if(this.custom.chartOptions) {
+			var chartOptions = this.custom.chartOptions;
+			if (!this.hasChart) {
+				chartOptions.chart.renderTo = $('.highslide-body')[0];
+				chartOptions.chart.width = $('.highslide-body').parent().width();
+				chartOptions.chart.height = $('.highslide-body').parent().height();
+				//chartOptions.chart.events.click = function () {};
+				var hsChart = new Highcharts.Chart(chartOptions);
+			}
+			this.hasChart = true;
+		}
+	};
+});
