@@ -11,7 +11,7 @@
 		<mx:RadioButtonGroup id="defaultRBGroup" />
 		<mx:RemoteObject id="cFGateway"
 						 destination="ColdFusion"
-						 source="wwwgrantcountytrends.admin.cfcs.CFGateway">			
+						 source="<site_name_here>.admin.cfcs.CFGateway">			
 			<mx:method fault="Alert.show(event.fault.faultString + '\n' + event.fault.faultDetail)"
 					   name="getPress"
 					   result="updateGrid(event)"/>		
