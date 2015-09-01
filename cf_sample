@@ -5,7 +5,7 @@
 		<cfargument name="typeID" type="string" required="yes"/>
 		<cfargument name="typeTitle" type="string" required="yes"/>
 		
-		<cfquery datasource="<database_name_here" name="typeQuery1">
+		<cfquery datasource="<database_name_here>" name="typeQuery1">
 			SELECT st.id, st.sponsor_type
 			FROM sponsor_type st
             WHERE st.sponsor_type = <cfqueryparam value = "#typeID#" CFSQLType = "CF_SQL_INTEGER" maxLength="11"> AND st.sponsor_type < 1000
@@ -13,14 +13,14 @@
 		</cfquery>
 		
         <cfif typeQuery1.recordcount>
-            <cfquery datasource="<database_name_here" name="typeQuery">
+            <cfquery datasource="<database_name_here>" name="typeQuery">
                 SELECT st.id, st.sponsor_type
                 FROM sponsor_type st
                 WHERE st.sponsor_type >= <cfqueryparam value = "#typeID#" CFSQLType = "CF_SQL_INTEGER" maxLength="11"> AND st.sponsor_type < 1000
                 ORDER BY sponsor_type DESC
             </cfquery>
             <cfif typeQuery.recordcount GT 0>
-                <cfquery datasource="<database_name_here" name="sponsorQuery">
+                <cfquery datasource="<database_name_here>" name="sponsorQuery">
                     SELECT s.id, s.sponsor_type_id
                     FROM sponsors s
                     WHERE s.sponsor_type_id >= <cfqueryparam value = "#typeID#" CFSQLType = "CF_SQL_INTEGER" maxLength="11"> AND s.sponsor_type_id < 1000
@@ -29,7 +29,7 @@
                 <cfif sponsorQuery.recordcount GT 0>
                     <cfloop index = "i" from = "1" to="#sponsorQuery.recordcount#">
                         <cfset tempTypeID = int(sponsorQuery["sponsor_type_id"][i]) + 1 />
-                        <cfquery datasource="<database_name_here" name="increaseQuery">
+                        <cfquery datasource="<database_name_here>" name="increaseQuery">
                             UPDATE sponsors
                             SET sponsor_type_id=#tempTypeID#
                             WHERE id = #sponsorQuery["id"][i]# AND sponsor_type_id < 1000
@@ -38,7 +38,7 @@
                 </cfif>
                 <cfloop index = "j" from = "1" to="#typeQuery.recordcount#">
                     <cfset tempTypeID = int(typeQuery["sponsor_type"][j]) + 1 />
-                    <cfquery datasource="<database_name_here" name="increaseTypeQuery">
+                    <cfquery datasource="<database_name_here>" name="increaseTypeQuery">
                         UPDATE sponsor_type
                         SET sponsor_type=#tempTypeID#
                         WHERE id = #typeQuery["id"][j]# AND sponsor_type < 1000
@@ -46,7 +46,7 @@
                 </cfloop>
             </cfif>
         </cfif>
-        <cfquery datasource="<database_name_here" name="query">
+        <cfquery datasource="<database_name_here>" name="query">
             INSERT INTO sponsor_type
             VALUES(NULL, <cfqueryparam value = "#typeID#" CFSQLType = "CF_SQL_INTEGER" maxLength = "11">,
             <cfqueryparam value = "#typeTitle#" CFSQLType = "CF_SQL_VARCHAR" maxLength = "100">)
@@ -59,7 +59,7 @@
 		<cfargument name="dbID" type="string" required="yes"/>
 		<cfargument name="typeTitle" type="string" required="yes"/>
 		
-        <cfquery datasource="<database_name_here" name="increaseTypeQuery">
+        <cfquery datasource="<database_name_here>" name="increaseTypeQuery">
             UPDATE sponsor_type
             SET sponsor_type_title="#typeTitle#"
             WHERE id = #dbID#
@@ -75,14 +75,14 @@
         <cfargument name="typeID" type="numeric" required="yes"/>
         <cfargument name="typeTitle" type="string" required="yes"/>
 		
-		<cfquery datasource="<database_name_here" name="typeQuery">
+		<cfquery datasource="<database_name_here>" name="typeQuery">
 			SELECT st.id, st.sponsor_type
 			FROM sponsor_type st
             WHERE st.sponsor_type = <cfqueryparam value = "#typeID#" CFSQLType = "CF_SQL_INTEGER" maxLength="11"> AND st.sponsor_type < 1000
 			ORDER BY sponsor_type DESC
 		</cfquery>
 		<cfif typeQuery.recordcount>	
-            <cfquery datasource="<database_name_here" name="typeQuery1">
+            <cfquery datasource="<database_name_here>" name="typeQuery1">
                 SELECT st.id, st.sponsor_type, st.sponsor_type_title
                 FROM sponsor_type st
                 WHERE st.sponsor_type < 1000 AND st.id != <cfqueryparam value = "#dbID#" CFSQLType = "CF_SQL_INTEGER" maxLength="11">
@@ -107,20 +107,20 @@
             	<cfset #ArrayInsertAt(dataArray, #typeID#, tempArray)# />
             </cfif>
 			<cfif #sponsorFlag#>
-                <cfquery datasource="<database_name_here" name="origSponsorQuery">
+                <cfquery datasource="<database_name_here>" name="origSponsorQuery">
                     SELECT so.id, so.sponsor_type_id
                     FROM sponsors so
                     WHERE so.sponsor_type_id = #origTypeID# AND so.sponsor_type_id < 1000
                 </cfquery>
 				<cfset myList = ValueList(origSponsorQuery.id)>
                 <cfloop index = "k" from = "#arraylen(dataArray)#" to = "1" step = "-1">
-                    <cfquery datasource="<database_name_here" name="sponsorQuery">
+                    <cfquery datasource="<database_name_here>" name="sponsorQuery">
                         SELECT s.id, s.sponsor_type_id, s.sponsor_type_id as oldSID
                         FROM sponsors s
                         WHERE s.sponsor_type_id = #dataArray[k][2]# AND s.id NOT IN (#myList#)
                     </cfquery>
                     <cfloop index = "m" from = "1" to="#sponsorQuery.recordcount#">
-                        <cfquery datasource="<database_name_here" name="changeSponsorsQuery">
+                        <cfquery datasource="<database_name_here>" name="changeSponsorsQuery">
                             UPDATE sponsors
                             SET sponsor_type_id = #k#
                             WHERE id = #sponsorQuery["id"][m]#
@@ -129,7 +129,7 @@
                     </cfloop>
                 </cfloop>
                 <cfloop index = "n" from = "1" to="#origSponsorQuery.recordcount#">
-                    <cfquery datasource="<database_name_here" name="changeSponsorsQuery2">
+                    <cfquery datasource="<database_name_here>" name="changeSponsorsQuery2">
                         UPDATE sponsors
                         SET sponsor_type_id = #typeID#
                         WHERE id = #origSponsorQuery["id"][n]# AND sponsor_type_id < 1000
@@ -137,7 +137,7 @@
                 </cfloop>
             </cfif>
             <cfloop index = "i" from = "1" to="#arraylen(dataArray)#">
-                <cfquery datasource="<database_name_here" name="increaseTypeQuery">
+                <cfquery datasource="<database_name_here>" name="increaseTypeQuery">
                     UPDATE sponsor_type
                     SET sponsor_type = #i#
                     WHERE id = #dataArray[i][1]# AND sponsor_type < 1000
@@ -146,13 +146,13 @@
         <cfelse>
 			<cfif #sponsorFlag#>
 				<cfset tempTypeID = #typeID# />
-                <cfquery datasource="<database_name_here" name="updateSponsorsQuery">
+                <cfquery datasource="<database_name_here>" name="updateSponsorsQuery">
                     UPDATE sponsors
                     SET sponsor_type_id = #tempTypeID#
                     WHERE sponsor_type_id = <cfqueryparam value = "#origTypeID#" CFSQLType = "CF_SQL_INTEGER" maxLength="11">
                 </cfquery>
             </cfif>
-            <cfquery datasource="<database_name_here">
+            <cfquery datasource="<database_name_here>">
                 UPDATE sponsor_type
                 SET sponsor_type = <cfqueryparam value = "#typeID#" CFSQLType = "CF_SQL_INTEGER" maxLength = "11" >,
                 sponsor_type_title = <cfqueryparam value = "#typeTitle#" CFSQLType = "CF_SQL_VARCHAR" maxLength = "100" >
@@ -167,7 +167,7 @@
 	<cffunction name="removeSponsorType" access="public" output="false" returntype="string">
 		<cfargument required="yes" name="argArray" type="array" />
 		
-		<cfquery datasource="<database_name_here">
+		<cfquery datasource="<database_name_here>">
 			DELETE FROM sponsor_type
 			WHERE id = <cfqueryparam value = "#argArray[1]#" CFSQLType = "CF_SQL_INTEGER" maxLength = "11" >
 			<cfloop index = "i" from = "2" to="#ARRAYLEN(argArray)#">
@@ -182,7 +182,7 @@
 	<cffunction name="getSponsors" access="remote" output="false" returntype="query" hint="Retrieves the sponsors for the passed sponsor type id">
 		<cfargument name="typeID" type="numeric" required="yes"/>
 		
-		<cfquery datasource="<database_name_here" name="query">
+		<cfquery datasource="<database_name_here>" name="query">
 			SELECT *
 			FROM sponsors i
 			WHERE i.sponsor_type_id = #typeID#
@@ -200,7 +200,7 @@
 		<cfargument name="logoPath" type="string" required="yes"/>
 		<cfargument name="category" type="string" required="yes"/>
 		
-		<cfquery datasource="<database_name_here" name="query">
+		<cfquery datasource="<database_name_here>" name="query">
 			INSERT INTO sponsors
 			VALUES(NULL, <cfqueryparam value = "#typeID#" CFSQLType = "CF_SQL_INTEGER" maxLength="11">,
             <cfqueryparam value = "#displayName#" CFSQLType = "CF_SQL_VARCHAR" maxLength = "255" >,
@@ -221,7 +221,7 @@
 		<cfargument name="logoPath" type="string" required="yes"/>
 		<cfargument name="category" type="string" required="yes"/>
 		
-		<cfquery datasource="<database_name_here">
+		<cfquery datasource="<database_name_here>">
 			UPDATE sponsors
 			SET sponsor_type_id=<cfqueryparam value = "#typeID#" CFSQLType = "CF_SQL_INTEGER" maxLength="11">,
             sponsor_display_name=<cfqueryparam value = "#displayName#" CFSQLType = "CF_SQL_VARCHAR" maxLength = "255" >,
@@ -238,7 +238,7 @@
 	<cffunction name="removeSponsors" access="public" output="false" returntype="string">
 		<cfargument required="yes" name="argArray" type="array" />
 		
-		<cfquery datasource="<database_name_here">
+		<cfquery datasource="<database_name_here>">
 			DELETE FROM sponsors
 			WHERE id = <cfqueryparam value = "#argArray[1]#" CFSQLType = "CF_SQL_INTEGER" maxLength = "11" >
 			<cfloop index = "i" from = "2" to="#ARRAYLEN(argArray)#">
@@ -256,14 +256,14 @@
 		
 		<cfset path = "images/footer_sponsors/#logoPath#" />
 		
-		<cfquery name="checkExisting" datasource="<database_name_here">
+		<cfquery name="checkExisting" datasource="<database_name_here>">
 			SELECT *
 			FROM sponsors
 			WHERE id = <cfqueryparam value = "#sponsorID#" CFSQLType = "CF_SQL_INTEGER" maxLength = "11"> AND sponsor_logo_path = <cfqueryparam value = "#path#" CFSQLType = "varchar" maxLength = "255">
 		</cfquery>
 		
 		<cfif checkExisting.RecordCount IS 0 >
-			<cfquery datasource="<database_name_here">
+			<cfquery datasource="<database_name_here>">
 				UPDATE sponsors
                 SET sponsor_logo_path = <cfqueryparam value = "#path#" CFSQLType = "CF_SQL_VARCHAR" maxLength = "255" >
                 WHERE id = <cfqueryparam value = "#sponsorID#" CFSQLType = "CF_SQL_INTEGER" maxLength = "11">
