@@ -1,0 +1,275 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009"
+		 xmlns:s="library://ns.adobe.com/flex/spark"
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 width="1000" creationComplete="setUp(); getPress();">
+	<s:layout>
+		<s:VerticalLayout/>
+	</s:layout>
+	
+	<fx:Declarations>
+		<mx:RadioButtonGroup id="defaultRBGroup" />
+		<mx:RemoteObject id="cFGateway"
+						 destination="ColdFusion"
+						 source="wwwgrantcountytrends.admin.cfcs.CFGateway">			
+			<mx:method fault="Alert.show(event.fault.faultString + '\n' + event.fault.faultDetail)"
+					   name="getPress"
+					   result="updateGrid(event)"/>		
+			<mx:method fault="Alert.show(event.fault.faultString + '\n' + event.fault.faultDetail)"
+					   name="addPress"
+					   result="actionComplete(event)"/>					   
+			<mx:method fault="Alert.show(event.fault.faultString + '\n' + event.fault.faultDetail)"
+					   name="updatePress"
+					   result="actionComplete(event)"/>					   
+			<mx:method fault="Alert.show(event.fault.faultString + '\n' + event.fault.faultDetail)"
+					   name="removePress"
+					   result="actionComplete(event)"/>
+		</mx:RemoteObject>
+	</fx:Declarations>	
+	<fx:Script>
+		<![CDATA[
+			import flash.events.*;
+			import flash.utils.*;
+			
+			import mx.binding.*;
+			import mx.collections.*;
+			import mx.containers.*;
+			import mx.controls.*;
+			import mx.controls.dataGridClasses.*;
+			import mx.core.*;
+			import mx.events.*;
+			import mx.formatters.*;
+			import mx.managers.*;
+			import mx.rpc.events.*;
+			import mx.rpc.remoting.mxml.*;
+			
+			private var  targetRX:RegExp = /"target=\"_blank\""/;
+			private var  fontOpen:RegExp = /<FONT (.*?)>/g;
+			private var  fontClose:RegExp = /<\/FONT>/g;
+			private var  textFormatOpen:RegExp = /<TEXTFORMAT (.*?)>/g;
+			private var  textFormatClose:RegExp = /<\/TEXTFORMAT>/g;
+			
+			public function setUp() : void
+			{
+				this.articleTitleRTE.toolbar.removeChild(this.articleTitleRTE.fontFamilyCombo);
+				this.articleTitleRTE.toolbar.removeChild(this.articleTitleRTE.fontSizeCombo);
+				this.articleTitleRTE.toolbar.removeChild(this.articleTitleRTE.colorPicker);
+				this.articleTitleRTE.toolbar.removeChild(this.articleTitleRTE.alignButtons);
+				this.articleTitleRTE.showToolTips = true;
+				this.articleTitleRTE.linkTextInput.width = 720;
+				this.articleRTE.toolbar.removeChild(this.articleRTE.fontFamilyCombo);
+				this.articleRTE.toolbar.removeChild(this.articleRTE.fontSizeCombo);
+				this.articleRTE.toolbar.removeChild(this.articleRTE.colorPicker);
+				this.articleRTE.toolbar.removeChild(this.articleRTE.alignButtons);
+				this.articleRTE.showToolTips = true;
+				this.articleRTE.linkTextInput.width = 720;
+				this.publicationRTE.toolbar.removeChild(this.publicationRTE.fontFamilyCombo);
+				this.publicationRTE.toolbar.removeChild(this.publicationRTE.fontSizeCombo);
+				this.publicationRTE.toolbar.removeChild(this.publicationRTE.colorPicker);
+				this.publicationRTE.toolbar.removeChild(this.publicationRTE.alignButtons);
+				this.publicationRTE.showToolTips = true;
+				this.publicationRTE.linkTextInput.width = 720;
+				return;
+			}// end function
+			
+			public function getPress() : void
+			{
+				this.cFGateway.getPress.send();
+				return;
+			}// end function
+			
+			public function updateGrid(event:ResultEvent) : void
+			{
+				var newDate:Date = null;
+				var newDateForm:DateFormatter = null;
+				this.articleGrid.dataProvider = ArrayCollection(event.result);
+				var num:Number = 0;
+				while (num < event.result.length)
+				{
+					
+					newDate = event.result[num].articleDate;
+					newDateForm = new DateFormatter();
+					newDateForm.formatString = "MM/DD/YYYY";
+					event.result[num].articleDate = newDateForm.format(newDate);
+					num++;
+				}
+				CursorManager.removeBusyCursor();
+				return;
+			}// end function
+			
+			public function addPress() : void
+			{
+				var newTitleHTML:String = null;
+				var newHTML:String = null;
+				var newPublicationHTML:String = null;
+				var valid:String = this.validate();
+				if (valid == "")
+				{
+					newTitleHTML = this.formatHTML(this.articleTitleRTE.htmlText);
+					newHTML = this.formatHTML(this.articleRTE.htmlText);
+					newPublicationHTML = this.formatHTML(this.publicationRTE.htmlText);
+					CursorManager.setBusyCursor();
+					this.cFGateway.addPress.send(newTitleHTML, newHTML, newPublicationHTML, this.datePicker.text);
+				}
+				else
+				{
+					Alert.show(valid, "Missing Values");
+				}
+				return;
+			}// end function
+			
+			public function validate() : String
+			{
+				var tempStr:* = "";
+				if (this.articleTitleRTE.htmlText == "")
+				{
+					tempStr = tempStr + "Missing value: Article Title\n";
+				}
+				if (this.articleRTE.htmlText == "")
+				{
+					tempStr = tempStr + "Missing value: Article Text\n";
+				}
+				if (this.publicationRTE.htmlText == "")
+				{
+					tempStr = tempStr + "Missing value: Publication\n";
+				}
+				if (this.datePicker.text == "")
+				{
+					tempStr = tempStr + "Missing value: Publication Date";
+				}
+				return tempStr;
+			}// end function
+			
+			public function actionComplete(event:ResultEvent) : void
+			{
+				this.articleTitleRTE.htmlText = "";
+				this.articleTitleRTE.linkTextInput.htmlText = "";
+				this.articleRTE.htmlText = "";
+				this.articleRTE.linkTextInput.htmlText = "";
+				this.publicationRTE.htmlText = "";
+				this.publicationRTE.linkTextInput.htmlText = "";
+				this.datePicker.text = "";
+				CursorManager.removeBusyCursor();
+				Alert.show(String(event.result));
+				this.cFGateway.getPress.send();
+				return;
+			}// end function
+			
+			public function updatePress() : void
+			{
+				var tempTitleStr:String = null;
+				var tempStr:String = null;
+				var tempPubStr:String = null;
+				var valid:String = this.validate();
+				if (valid == "")
+				{
+					tempTitleStr = this.formatHTML(this.articleTitleRTE.htmlText);
+					tempStr = this.formatHTML(this.articleRTE.htmlText);
+					tempPubStr = this.formatHTML(this.publicationRTE.htmlText);
+					CursorManager.setBusyCursor();
+					this.cFGateway.updatePress.send(tempTitleStr, tempStr, tempPubStr, this.datePicker.text, this.articleGrid.selectedItem.id);
+				}
+				else
+				{
+					Alert.show(valid, "Missing Values");
+				}
+				return;
+			}// end function
+			
+			public function confirmRemove() : void
+			{
+				Alert.show("Are you sure you want to delete the selected article?", "Remove Article", 3, this, this.removePress);
+				return;
+			}// end function
+			
+			public function removePress(event:CloseEvent) : void
+			{
+				if (event.detail == Alert.YES)
+				{
+					CursorManager.setBusyCursor();
+					this.cFGateway.removePress.send(this.articleGrid.selectedItem.id);
+				}
+				return;
+			}// end function
+			
+			public function formatHTML(newStr:String) : String
+			{
+				newStr = newStr.replace(this.textFormatOpen, "");
+				newStr = newStr.replace(this.textFormatClose, "");
+				newStr = newStr.replace(this.fontOpen, "");
+				newStr = newStr.replace(this.fontClose, "");
+				newStr = newStr.replace(this.targetRX, "");
+				
+				newStr = newStr.replace(/<P ALIGN="(.*?)">/, "");
+				newStr = newStr.replace(/<P ALIGN="(.*?)">/g, "<br \x2F>");
+				newStr = newStr.replace(/<\x2FP>/g, "");
+				newStr = newStr.replace(/<LI>/g, "<li>");
+				newStr = newStr.replace(/<\x2FLI>/g, "<\x2Fli>");
+				newStr = newStr.replace(/<\x2Fli><br \x2F><br \x2F>/g, "<\x2Fli><br \x2F>");
+				newStr = newStr.replace(/<B>/g, "<b>");
+				newStr = newStr.replace(/<\x2FB>/g, "<\x2Fb>");
+				/*if (newStr.search("@") > -1)
+				{
+				newStr = newStr.replace(/ TARGET="_blank"/, "");
+				}*/
+				return newStr;
+			}// end function
+			
+			public function itemSelection() : void
+			{
+				CursorManager.setBusyCursor();
+				this.articleTitleRTE.htmlText = this.articleGrid.selectedItem.articleTitle;
+				this.articleRTE.htmlText = this.articleGrid.selectedItem.articleText;
+				this.publicationRTE.htmlText = this.articleGrid.selectedItem.publication;
+				this.datePicker.text = this.articleGrid.selectedItem.articleDate;
+				CursorManager.removeBusyCursor();
+				return;
+			}// end function
+		]]>
+	</fx:Script>
+	
+	<mx:HBox width="100%">
+		<s:DataGrid id="articleGrid" width="950" selectionChange="{this.itemSelection();}">
+			<s:columns>
+				<s:ArrayCollection>
+					<s:GridColumn dataField="id" headerText="DB ID" width="50" />
+					<s:GridColumn dataField="title" headerText="Article Title">
+						<s:itemRenderer>
+							<fx:Component>
+								<s:GridItemRenderer>
+									<mx:Label id="titleDisplay" htmlText="{data.articleTitle}" />
+								</s:GridItemRenderer>
+							</fx:Component>
+						</s:itemRenderer>
+					</s:GridColumn>
+					<s:GridColumn dataField="articleDate" headerText="Use Date" width="125" />
+				</s:ArrayCollection>
+			</s:columns>
+		</s:DataGrid>
+	</mx:HBox>
+	<mx:VBox width="100%">
+		<mx:Spacer height="5"/>
+		<mx:Form>
+			<mx:FormItem label="Article Title:">
+				<mx:RichTextEditor id="articleTitleRTE" styleName="NoBorder" width="800" height="200"/>
+			</mx:FormItem>
+			<mx:Spacer height="5"/>
+			<mx:FormItem label="Article Text:">
+				<mx:RichTextEditor id="articleRTE" styleName="NoBorder" width="800" height="210"/>
+			</mx:FormItem>
+			<mx:Spacer height="5"/>
+			<mx:FormItem label="Article Publication:">
+				<mx:RichTextEditor id="publicationRTE" styleName="NoBorder" width="800" height="200"/>
+			</mx:FormItem>
+			<mx:Spacer height="5"/>
+			<mx:FormItem label="Article Date:">
+				<mx:DateField id="datePicker" yearNavigationEnabled="true" width="300"/>
+			</mx:FormItem>
+		</mx:Form>
+	</mx:VBox>
+	<mx:ControlBar>
+		<mx:Button id="add" label="Add Article" click="{this.addPress();}"/>
+		<mx:Button id="update" label="Update Article" click="{this.updatePress();}"/>
+		<mx:Button id="remove" label="Remove Article" click="{this.confirmRemove();}"/>
+	</mx:ControlBar>
+</s:Group>
